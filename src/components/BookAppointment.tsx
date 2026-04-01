@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Calendar, Clock, User, Mail, Phone, MapPin, FileText } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, User, Mail, Phone, MapPin, FileText } from 'lucide-react';
 import { appointmentStore } from '../lib/appointmentStore';
+import { Calendar } from './Calendar';
 
 const services = [
   { id: 'account', name: 'Open New Account', duration: '30 min' },
@@ -27,6 +28,7 @@ const timeSlots = [
 export function BookAppointment() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [formData, setFormData] = useState({
     service: '',
     branch: '',
@@ -112,7 +114,7 @@ export function BookAppointment() {
           <div className="space-y-6">
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-3">
-                <Calendar className="w-4 h-4" />
+                <CalendarIcon className="w-4 h-4" />
                 Select Service
               </label>
               <div className="grid sm:grid-cols-2 gap-3">
@@ -182,17 +184,39 @@ export function BookAppointment() {
           <div className="space-y-6">
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-3">
-                <Calendar className="w-4 h-4" />
+                <CalendarIcon className="w-4 h-4" />
                 Select Date
               </label>
-              <input
-                type="date"
-                value={formData.date}
-                onChange={(e) => updateField('date', e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2"
-                style={{ '--tw-ring-color': '#008c50' } as React.CSSProperties}
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formData.date}
+                  onChange={(e) => updateField('date', e.target.value)}
+                  placeholder="Select a date"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2"
+                  style={{ '--tw-ring-color': '#008c50' } as React.CSSProperties}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCalendar(!showCalendar)}
+                  className="absolute top-0 right-0 h-full px-4 text-slate-500 hover:text-slate-700"
+                >
+                  <CalendarIcon className="w-4 h-4" />
+                </button>
+                {showCalendar && (
+                  <div className="absolute top-full left-0 mt-1 z-10">
+                    <Calendar
+                      selectedDate={formData.date}
+                      onSelectDate={(date) => {
+                        updateField('date', date);
+                        setShowCalendar(false);
+                      }}
+                      minDate={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>
