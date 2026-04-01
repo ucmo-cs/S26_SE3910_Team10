@@ -11,29 +11,45 @@ public class Appointment {
     private Long id;
 
     private String clientName;
-    private String service;
+
     private LocalDateTime appointmentTime;
 
-    // Constructors
+    private int durationMinutes; // 15, 30, 45, 60
+
+    private String status; // BOOKED, CANCELLED
+
     public Appointment() {}
 
-    public Appointment(Long id, String clientName, String service, LocalDateTime appointmentTime) {
+    public Appointment(Long id, String clientName, LocalDateTime appointmentTime,
+                       int durationMinutes, String status) {
         this.id = id;
         this.clientName = clientName;
-        this.service = service;
+        this.appointmentTime = appointmentTime;
+        this.durationMinutes = durationMinutes;
+        this.status = status;
+    }
+
+    public Long getId() { return id; }
+
+    public String getClientName() { return clientName; }
+
+    public LocalDateTime getAppointmentTime() { return appointmentTime; }
+
+    public int getDurationMinutes() { return durationMinutes; }
+
+    public String getStatus() { return status; }
+
+    public void setId(Long id) { this.id = id; }
+
+    public void setClientName(String clientName) { this.clientName = clientName; }
+
+    public void setAppointmentTime(LocalDateTime appointmentTime) {
         this.appointmentTime = appointmentTime;
     }
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public void setDurationMinutes(int durationMinutes) {
+        this.durationMinutes = durationMinutes;
+    }
 
-    public String getClientName() { return clientName; }
-    public void setClientName(String clientName) { this.clientName = clientName; }
-
-    public String getService() { return service; }
-    public void setService(String service) { this.service = service; }
-
-    public LocalDateTime getAppointmentTime() { return appointmentTime; }
-    public void setAppointmentTime(LocalDateTime appointmentTime) { this.appointmentTime = appointmentTime; }
+    public void setStatus(String status) { this.status = status; }
 }
