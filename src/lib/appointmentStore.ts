@@ -1,74 +1,93 @@
+// All data operations go through the Spring Boot REST API at /api/*.
+// The Vite proxy (vite.config.ts) forwards /api/* to http://localhost:8080.
+
+export interface Topic {
+  id: number;
+  name: string;
+}
+
+export interface Branch {
+  id: number;
+  name: string;
+  address: string;
+  topics: Topic[];
+}
+
 export interface Appointment {
-  id: string;
-  service: string;
+  id: number;
+  topic: Topic;
+  branch: Branch;
+  date: string;      // ISO date string, e.g. "2024-06-15"
+  time: string;      // "HH:mm" format, e.g. "10:00"
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  notes?: string;
+  status: 'SCHEDULED' | 'CANCELLED';
+  createdAt: string;
+}
+
+export interface AppointmentRequest {
+  topicId: number;
+  branchId: number;
   date: string;
   time: string;
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
-  branch: string;
   notes?: string;
-  status: 'scheduled' | 'cancelled';
-  createdAt: string;
 }
 
-class AppointmentStore {
-  private appointments: Appointment[] = [];
-  private listeners: (() => void)[] = [];
-
-  constructor() {
-    // Load appointments from localStorage
-    const stored = localStorage.getItem('bank-appointments');
-    if (stored) {
-      this.appointments = JSON.parse(stored);
-    }
-  }
-
-  private persist() {
-    localStorage.setItem('bank-appointments', JSON.stringify(this.appointments));
-    this.listeners.forEach(listener => listener());
-  }
-
-  subscribe(listener: () => void) {
-    this.listeners.push(listener);
-    return () => {
-      this.listeners = this.listeners.filter(l => l !== listener);
-    };
-  }
-
-  addAppointment(appointment: Omit<Appointment, 'id' | 'createdAt' | 'status'>) {
-    const newAppointment: Appointment = {
-      ...appointment,
-      id: Math.random().toString(36).substr(2, 9),
-      createdAt: new Date().toISOString(),
-      status: 'scheduled'
-    };
-    this.appointments.push(newAppointment);
-    this.persist();
-    return newAppointment;
-  }
-
-  getAppointments(): Appointment[] {
-    return [...this.appointments];
-  }
-
-  getAppointment(id: string): Appointment | undefined {
-    return this.appointments.find(a => a.id === id);
-  }
-
-  cancelAppointment(id: string) {
-    const appointment = this.appointments.find(a => a.id === id);
-    if (appointment) {
-      appointment.status = 'cancelled';
-      this.persist();
-    }
-  }
-
-  deleteAppointment(id: string) {
-    this.appointments = this.appointments.filter(a => a.id !== id);
-    this.persist();
-  }
+export async function getTopics(): Promise<Topic[]> {
+  const res = await fetch('/api/topics');
+  if (!res.ok) throw new Error('Failed to fetch topics');
+  return res.json();
 }
 
-export const appointmentStore = new AppointmentStore();
+export async function getBranches(topicId?: number): Promise<Branch[]> {
+  const url = topicId != null ? `/api/branches?topicId=${topicId}` : '/api/branches';
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Failed to fetch branches');
+  return res.json();
+}
+
+export async function getAvailableSlots(branchId: number, date: string): Promise<string[]> {
+  const res = await fetch(`/api/appointments/available-slots?branchId=${branchId}&date=${date}`);
+  if (!res.ok) throw new Error('Failed to fetch available slots');
+  return res.json();
+}
+
+export async function getAppointments(): Promise<Appointment[]> {
+  const res = await fetch('/api/appointments');
+  if (!res.ok) throw new Error('Failed to fetch appointments');
+  return res.json();
+}
+
+export async function getAppointment(id: number): Promise<Appointment> {
+  const res = await fetch(`/api/appointments/${id}`);
+  if (!res.ok) throw new Error(`Failed to fetch appointment ${id}`);
+  return res.json();
+}
+
+export async function createAppointment(data: AppointmentRequest): Promise<Appointment> {
+  const res = await fetch('/api/appointments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create appointment');
+  return res.json();
+}
+
+export async function cancelAppointment(id: number): Promise<Appointment> {
+  const res = await fetch(`/api/appointments/${id}/cancel`, { method: 'PATCH' });
+  if (!res.ok) throw new Error(`Failed to cancel appointment ${id}`);
+  return res.json();
+}
+
+export async function deleteAppointment(id: number): Promise<void> {
+  const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`Failed to delete appointment ${id}`);
+}

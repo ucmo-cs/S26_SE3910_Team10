@@ -9,7 +9,7 @@ interface CalendarProps {
 
 export function Calendar({ selectedDate, onSelectDate, minDate }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(() => {
-    const date = selectedDate ? new Date(selectedDate) : new Date();
+    const date = selectedDate ? new Date(selectedDate + 'T12:00:00') : new Date();
     return new Date(date.getFullYear(), date.getMonth(), 1);
   });
 
@@ -43,14 +43,14 @@ export function Calendar({ selectedDate, onSelectDate, minDate }: CalendarProps)
   const isDateDisabled = (day: number) => {
     if (!minDate) return false;
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    const min = new Date(minDate);
+    const min = new Date(minDate + 'T12:00:00');
     return date < min;
   };
 
   const isDateSelected = (day: number) => {
     if (!selectedDate) return false;
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    const selected = new Date(selectedDate);
+    const selected = new Date(selectedDate + 'T12:00:00');
     return (
       date.getFullYear() === selected.getFullYear() &&
       date.getMonth() === selected.getMonth() &&
@@ -60,9 +60,10 @@ export function Calendar({ selectedDate, onSelectDate, minDate }: CalendarProps)
 
   const handleDateClick = (day: number) => {
     if (isDateDisabled(day)) return;
-    const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    const dateString = date.toISOString().split('T')[0];
-    onSelectDate(dateString);
+    const y = currentMonth.getFullYear();
+    const m = String(currentMonth.getMonth() + 1).padStart(2, '0');
+    const d = String(day).padStart(2, '0');
+    onSelectDate(`${y}-${m}-${d}`);
   };
 
   const days = [];

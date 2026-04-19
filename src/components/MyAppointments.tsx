@@ -1,27 +1,26 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { Calendar, Clock, MapPin, User, Mail, Phone, FileText, X } from 'lucide-react';
-import { appointmentStore, Appointment } from '../lib/appointmentStore';
+import { getAppointments, cancelAppointment, Appointment } from '../lib/appointmentStore';
 
 export function MyAppointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
+  // Fetch all appointments from the backend on mount
   useEffect(() => {
-    setAppointments(appointmentStore.getAppointments());
-    const unsubscribe = appointmentStore.subscribe(() => {
-      setAppointments(appointmentStore.getAppointments());
-    });
-    return unsubscribe;
+    getAppointments().then(setAppointments);
   }, []);
 
-  const handleCancel = (id: string) => {
+  const handleCancel = async (id: number) => {
     if (confirm('Are you sure you want to cancel this appointment?')) {
-      appointmentStore.cancelAppointment(id);
+      await cancelAppointment(id);
+      // Re-fetch so the UI reflects the updated status from the DB
+      getAppointments().then(setAppointments);
     }
   };
 
-  const scheduledAppointments = appointments.filter(a => a.status === 'scheduled');
-  const cancelledAppointments = appointments.filter(a => a.status === 'cancelled');
+  const scheduledAppointments = appointments.filter(a => a.status === 'SCHEDULED');
+  const cancelledAppointments = appointments.filter(a => a.status === 'CANCELLED');
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -61,15 +60,15 @@ export function MyAppointments() {
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
                       <div>
                         <div className="inline-block text-xs font-medium px-3 py-1 rounded-full mb-3" style={{ backgroundColor: '#e6f4ed', color: '#006b3d' }}>
-                          {appointment.service}
+                          {appointment.topic.name}
                         </div>
                         <div className="flex items-center gap-2 text-slate-600 mb-2">
                           <Calendar className="w-4 h-4" />
-                          <span>{new Date(appointment.date).toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
+                          <span>{new Date(appointment.date + 'T12:00:00').toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
                           })}</span>
                         </div>
                         <div className="flex items-center gap-2 text-slate-600 mb-2">
@@ -78,7 +77,7 @@ export function MyAppointments() {
                         </div>
                         <div className="flex items-center gap-2 text-slate-600">
                           <MapPin className="w-4 h-4" />
-                          <span>{appointment.branch}</span>
+                          <span>{appointment.branch.name} — {appointment.branch.address}</span>
                         </div>
                       </div>
                       <button
@@ -135,15 +134,15 @@ export function MyAppointments() {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <div className="inline-block bg-slate-200 text-slate-600 text-xs font-medium px-3 py-1 rounded-full mb-3">
-                          {appointment.service}
+                          {appointment.topic.name}
                         </div>
                         <div className="flex items-center gap-2 text-slate-600 mb-2">
                           <Calendar className="w-4 h-4" />
-                          <span>{new Date(appointment.date).toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
+                          <span>{new Date(appointment.date + 'T12:00:00').toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
                           })}</span>
                         </div>
                         <div className="flex items-center gap-2 text-slate-600">
