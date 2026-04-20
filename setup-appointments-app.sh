@@ -14,11 +14,10 @@ DB_PASS="appointments123"
 echo ">>> Installing system packages"
 sudo dnf install -y \
     git \
-    java-21-openjdk-devel \
+    java-21-openjdk \
     maven \
     nodejs \
     npm \
-    mariadb \
     mariadb-server
 
 # ── 2. JAVA_HOME ──────────────────────────────────────────────────────────────
