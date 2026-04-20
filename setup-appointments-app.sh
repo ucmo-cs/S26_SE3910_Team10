@@ -5,7 +5,6 @@ REPO_URL="https://github.com/ucmo-cs/S26_SE3910_Team10.git"
 BACKEND_BRANCH="feature/backend-api"
 FRONTEND_BRANCH="feature/frontend-api-integration"
 INSTALL_DIR="$HOME/appointments-app"
-JAVA_HOME_PATH="/usr/lib/jvm/java-21-openjdk"
 DB_NAME="appointments_db"
 DB_USER="appointments"
 DB_PASS="appointments123"
@@ -15,6 +14,7 @@ echo ">>> Installing system packages"
 sudo dnf install -y \
     git \
     java-21-openjdk \
+    java-21-openjdk-devel \
     maven \
     nodejs \
     npm \
@@ -22,7 +22,17 @@ sudo dnf install -y \
 
 # ── 2. JAVA_HOME ──────────────────────────────────────────────────────────────
 echo ">>> Configuring JAVA_HOME"
+JAVA_HOME_PATH=$(ls -d /usr/lib/jvm/java-21-openjdk* 2>/dev/null | grep -v "^.*-\(jre\|src\|javadoc\)" | head -1)
+
+if [ -z "$JAVA_HOME_PATH" ] || [ ! -f "$JAVA_HOME_PATH/bin/javac" ]; then
+    echo "ERROR: Could not find Java 21 SDK at $JAVA_HOME_PATH"
+    echo "       Make sure java-21-openjdk installed successfully"
+    exit 1
+fi
+
+echo "    Using JAVE_HOME=$JAVA_HOME_PATH"
 export JAVA_HOME="$JAVA_HOME_PATH"
+
 if ! grep -q "JAVA_HOME" ~/.bashrc; then
     echo "export JAVA_HOME=$JAVA_HOME_PATH" >> ~/.bashrc
 fi
