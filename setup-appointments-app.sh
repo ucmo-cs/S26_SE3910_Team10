@@ -39,7 +39,7 @@ fi
 
 # ── 3. MariaDB ────────────────────────────────────────────────────────────────
 echo ">>> Starting MariaDB"
-sudo systemctl enable --now mariadb
+sudo systemctl start --now mariadb
 
 echo ">>> Creating database and user"
 sudo mariadb -e "
